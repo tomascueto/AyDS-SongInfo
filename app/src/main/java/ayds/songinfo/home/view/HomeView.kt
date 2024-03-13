@@ -1,5 +1,6 @@
 package ayds.songinfo.home.view
 
+import android.app.Activity
 import android.content.Intent
 import android.os.Bundle
 import android.view.View
@@ -8,20 +9,18 @@ import android.widget.Button
 import android.widget.EditText
 import android.widget.ImageView
 import android.widget.TextView
-import androidx.appcompat.app.AppCompatActivity
+import ayds.observer.Observable
+import ayds.observer.Subject
 import ayds.songinfo.R
 import ayds.songinfo.home.model.HomeModel
 import ayds.songinfo.home.model.HomeModelInjector
-import ayds.songinfo.home.model.entities.Song.EmptySong
 import ayds.songinfo.home.model.entities.Song
+import ayds.songinfo.home.model.entities.Song.EmptySong
 import ayds.songinfo.home.model.entities.Song.SpotifySong
 import ayds.songinfo.home.view.HomeUiState.Companion.DEFAULT_IMAGE
-import ayds.songinfo.moredetails.fulllogic.OtherInfoWindow
 import ayds.songinfo.utils.UtilsInjector
 import ayds.songinfo.utils.navigation.NavigationUtils
 import ayds.songinfo.utils.view.ImageLoader
-import ayds.observer.Observable
-import ayds.observer.Subject
 
 interface HomeView {
     val uiEventObservable: Observable<HomeUiEvent>
@@ -31,7 +30,7 @@ interface HomeView {
     fun openExternalLink(url: String)
 }
 
-class HomeViewActivity : AppCompatActivity(), HomeView {
+class HomeViewActivity : Activity(), HomeView {
 
     private val onActionSubject = Subject<HomeUiEvent>()
     private lateinit var homeModel: HomeModel

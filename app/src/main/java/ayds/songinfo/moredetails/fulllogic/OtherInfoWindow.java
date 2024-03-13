@@ -1,5 +1,6 @@
 package ayds.songinfo.moredetails.fulllogic;
 
+import android.app.Activity;
 import android.content.Intent;
 import android.net.Uri;
 import android.os.Bundle;
@@ -28,7 +29,7 @@ import retrofit2.converter.scalars.ScalarsConverterFactory;
 
 
 
-public class OtherInfoWindow extends AppCompatActivity {
+public class OtherInfoWindow extends Activity {
 
   public final static String ARTIST_NAME_EXTRA = "artistName";
 
