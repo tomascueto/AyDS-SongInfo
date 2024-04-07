@@ -27,7 +27,7 @@ internal class JsonToSongResolver : SpotifyToSongResolver {
             serviceData?.getFirstItem()?.let { item ->
                 SpotifySong(
                   item.getId(), item.getSongName(), item.getArtistName(), item.getAlbumName(),
-                  item.getReleaseDate(), item.getSpotifyUrl(), item.getImageUrl()
+                  item.getReleaseDate(), item.getReleaseDatePrecision(), item.getSpotifyUrl(), item.getImageUrl()
                 )
             }
         } catch (e: Exception) {
@@ -58,6 +58,11 @@ internal class JsonToSongResolver : SpotifyToSongResolver {
     private fun JsonObject.getReleaseDate(): String {
         val album = this[ALBUM].asJsonObject
         return album[RELEASE_DATE].asString
+    }
+
+    private fun JsonObject.getReleaseDatePrecision(): String {
+        val album = this[ALBUM].asJsonObject
+        return album["release_date_precision"].asString
     }
 
     private fun JsonObject.getImageUrl(): String {
