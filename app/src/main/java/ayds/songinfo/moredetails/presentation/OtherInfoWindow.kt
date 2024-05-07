@@ -1,4 +1,4 @@
-package ayds.songinfo.moredetails.fulllogic
+package ayds.songinfo.moredetails.presentation
 
 import android.app.Activity
 import android.content.Intent
@@ -10,12 +10,16 @@ import android.widget.ImageView
 import android.widget.TextView
 import androidx.room.Room.databaseBuilder
 import ayds.songinfo.R
-import com.google.gson.Gson
-import com.google.gson.JsonObject
+import ayds.songinfo.moredetails.data.OtherInfoRepository
+import ayds.songinfo.moredetails.data.OtherInfoRepositoryImpl
+import ayds.songinfo.moredetails.data.external.OtherInfoService
+import ayds.songinfo.moredetails.data.external.OtherInfoServiceImpl
+import ayds.songinfo.moredetails.data.local.OtherInfoLocalStorageDB
+import ayds.songinfo.moredetails.fulllogic.ArticleDatabase
+import ayds.songinfo.moredetails.fulllogic.LastFMAPI
 import com.squareup.picasso.Picasso
 import retrofit2.Retrofit
 import retrofit2.converter.scalars.ScalarsConverterFactory
-import java.io.IOException
 import java.util.Locale
 
 private const val ARTICLE_BD_NAME = "database-article"
@@ -30,38 +34,39 @@ class OtherInfoWindow : Activity() {
     private lateinit var openUrlButton: Button
     private lateinit var lastFMImageView: ImageView
 
-    private lateinit var articleDatabase: ArticleDatabase
+    private lateinit var repository: OtherInfoRepository
 
-    private lateinit var lastFMAPI: LastFMAPI
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_other_info)
 
         initViewProperties()
-        initArticleDatabase()
-        initLastFMAPI()
+        initGraph()
         getArtistInfoAsync()
+    }
+
+    private fun initGraph() {
+        val articleDatabase =
+            databaseBuilder(this, ArticleDatabase::class.java, ARTICLE_BD_NAME).build()
+
+        val retrofit = Retrofit.Builder()
+            .baseUrl(LASTFM_BASE_URL)
+            .addConverterFactory(ScalarsConverterFactory.create())
+            .build()
+
+        val lastFMAPI = retrofit.create(LastFMAPI::class.java)
+
+        val otherInfoLocalStorage = OtherInfoLocalStorageDB(articleDatabase)
+        val otherInfoService = OtherInfoServiceImpl(lastFMAPI)
+
+        repository = OtherInfoRepositoryImpl(otherInfoLocalStorage, otherInfoService)
     }
 
     private fun initViewProperties() {
         articleTextView = findViewById(R.id.textPane1)
         openUrlButton = findViewById(R.id.openUrlButton)
         lastFMImageView = findViewById(R.id.lastFMImageView)
-    }
-
-    private fun initArticleDatabase() {
-        articleDatabase =
-            databaseBuilder(this, ArticleDatabase::class.java, ARTICLE_BD_NAME).build()
-    }
-
-    private fun initLastFMAPI() {
-        val retrofit = Retrofit.Builder()
-            .baseUrl(LASTFM_BASE_URL)
-            .addConverterFactory(ScalarsConverterFactory.create())
-            .build()
-
-        lastFMAPI = retrofit.create(LastFMAPI::class.java)
     }
 
     private fun getArtistInfoAsync() {
@@ -71,75 +76,8 @@ class OtherInfoWindow : Activity() {
     }
 
     private fun getArtistInfo() {
-        val artistBiography = getArtistInfoFromRepository()
+        val artistBiography = repository.getArtistInfo(getArtistName())
         updateUi(artistBiography)
-    }
-
-    private fun getArtistInfoFromRepository(): ArtistBiography {
-        val artistName = getArtistName()
-
-        val dbArticle = getArticleFromDB(artistName)
-
-        val artistBiography: ArtistBiography
-
-        if (dbArticle != null) {
-            artistBiography = dbArticle.markItAsLocal()
-        } else {
-            artistBiography = getArticleFromService(artistName)
-            if (artistBiography.biography.isNotEmpty()) {
-                insertArtistIntoDB(artistBiography)
-            }
-        }
-        return artistBiography
-    }
-
-    private fun ArtistBiography.markItAsLocal() = copy(biography = "[*]$biography")
-
-    private fun getArticleFromDB(artistName: String): ArtistBiography? {
-        val artistEntity = articleDatabase.ArticleDao().getArticleByArtistName(artistName)
-        return artistEntity?.let {
-            ArtistBiography(artistName, artistEntity.biography, artistEntity.articleUrl)
-        }
-    }
-
-    private fun getArticleFromService(artistName: String): ArtistBiography {
-
-        var artistBiography = ArtistBiography(artistName, "", "")
-        try {
-            val callResponse = getSongFromService(artistName)
-            artistBiography = getArtistBioFromExternalData(callResponse.body(), artistName)
-        } catch (e1: IOException) {
-            e1.printStackTrace()
-        }
-
-        return artistBiography
-    }
-
-    private fun getArtistBioFromExternalData(
-        serviceData: String?,
-        artistName: String
-    ): ArtistBiography {
-        val gson = Gson()
-        val jobj = gson.fromJson(serviceData, JsonObject::class.java)
-
-        val artist = jobj["artist"].getAsJsonObject()
-        val bio = artist["bio"].getAsJsonObject()
-        val extract = bio["content"]
-        val url = artist["url"]
-        val text = extract?.asString ?: "No Results"
-
-        return ArtistBiography(artistName, text, url.asString)
-    }
-
-    private fun getSongFromService(artistName: String) =
-        lastFMAPI.getArtistInfo(artistName).execute()
-
-    private fun insertArtistIntoDB(artistBiography: ArtistBiography) {
-        articleDatabase.ArticleDao().insertArticle(
-            ArticleEntity(
-                artistBiography.artistName, artistBiography.biography, artistBiography.articleUrl
-            )
-        )
     }
 
     private fun updateUi(artistBiography: ArtistBiography) {
