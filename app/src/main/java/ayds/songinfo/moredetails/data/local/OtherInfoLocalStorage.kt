@@ -1,17 +1,15 @@
 package ayds.songinfo.moredetails.data.local
 
-import ayds.songinfo.moredetails.fulllogic.ArticleDatabase
-import ayds.songinfo.moredetails.fulllogic.ArticleEntity
-import ayds.songinfo.moredetails.presentation.ArtistBiography
+import ayds.songinfo.moredetails.domain.ArtistBiography
 
 interface OtherInfoLocalStorage {
     fun getArticle(artistName: String): ArtistBiography?
     fun insertArtist(artistBiography: ArtistBiography)
 }
 
-internal class OtherInfoLocalStorageDB(
-    private val articleDatabase: ArticleDatabase
-): OtherInfoLocalStorage {
+internal class OtherInfoLocalStorageImpl(
+    private val articleDatabase: ArticleDatabase,
+) : OtherInfoLocalStorage {
 
     override fun getArticle(artistName: String): ArtistBiography? {
         val artistEntity = articleDatabase.ArticleDao().getArticleByArtistName(artistName)
