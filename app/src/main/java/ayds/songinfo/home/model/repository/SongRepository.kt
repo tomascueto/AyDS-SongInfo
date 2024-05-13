@@ -25,7 +25,7 @@ internal class SongRepositoryImpl(
                 try {
                     spotifySong = spotifyTrackService.getSong(term)
 
-                    (spotifySong as? SpotifySong)?.let {
+                    spotifySong?.let {
                         when {
                             it.isSavedSong() -> spotifyLocalStorage.updateSongTerm(term, it.id)
                             else -> spotifyLocalStorage.insertSong(term, it)

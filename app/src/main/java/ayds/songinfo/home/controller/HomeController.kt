@@ -13,7 +13,7 @@ interface HomeController {
 
 internal class HomeControllerImpl(
     private val homeModel: HomeModel
-) : ayds.songinfo.home.controller.HomeController {
+) : HomeController {
 
     private lateinit var homeView: HomeView
 

@@ -5,7 +5,7 @@ import ayds.songinfo.home.model.entities.Song
 interface ReleaseDateResolverFactory {
     fun getReleaseDateResolver(song: Song.SpotifySong): ReleaseDateResolver
 }
-class ReleaseDateResolverFactoryImpl: ReleaseDateResolverFactory {
+internal class ReleaseDateResolverFactoryImpl: ReleaseDateResolverFactory {
     override fun getReleaseDateResolver(song: Song.SpotifySong): ReleaseDateResolver =
         when (song.releaseDatePrecision) {
             "day" -> ReleaseDateDayResolver(song)
