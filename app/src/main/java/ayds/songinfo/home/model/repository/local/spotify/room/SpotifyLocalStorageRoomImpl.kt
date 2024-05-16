@@ -38,6 +38,7 @@ internal class SpotifyLocalStorageRoomImpl(
         this.albumName,
         this.releaseDate,
         this.spotifyUrl,
+        this.releaseDatePrecision,
         this.imageUrl
     )
 
@@ -48,6 +49,7 @@ internal class SpotifyLocalStorageRoomImpl(
         this.albumName,
         this.releaseDate,
         this.spotifyUrl,
+        this.releaseDatePrecision,
         this.imageUrl
     )
 }
