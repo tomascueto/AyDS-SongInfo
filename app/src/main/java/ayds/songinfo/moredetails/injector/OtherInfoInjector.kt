@@ -1,6 +1,6 @@
 package ayds.songinfo.moredetails.injector
 
-import OtherInfoActivity
+
 import android.content.Context
 import androidx.room.Room
 import ayds.songinfo.moredetails.data.OtherInfoRepositoryImpl
